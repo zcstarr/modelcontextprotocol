@@ -1,0 +1,1315 @@
+{
+  "openrpc": "1.2.6",
+  "info": {
+    "title": "Model Context Protocol",
+    "version": "1.0.0",
+    "description": "JSON-RPC API for the Model Context Protocol (MCP), enabling communication between LLM clients and servers"
+  },
+  "methods": [
+    {
+      "name": "initialize",
+      "summary": "Initialize the connection between client and server",
+      "description": "This request is sent from the client to the server when it first connects, asking it to begin initialization.",
+      "params": [
+        {
+          "name": "capabilities",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ClientCapabilities"
+          }
+        },
+        {
+          "name": "clientInfo",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/Implementation"
+          }
+        },
+        {
+          "name": "protocolVersion",
+          "required": true,
+          "description": "The latest version of the Model Context Protocol that the client supports. The client MAY decide to support older versions as well.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "initializeResult",
+        "schema": {
+          "$ref": "#/components/schemas/InitializeResult"
+        }
+      }
+    },
+    {
+      "name": "ping",
+      "summary": "Check if the other party is alive",
+      "description": "A ping, issued by either the server or the client, to check that the other party is still alive. The receiver must promptly respond, or else may be disconnected.",
+      "params": [],
+      "result": {
+        "name": "pingResult",
+        "schema": {
+          "$ref": "#/components/schemas/Result"
+        }
+      }
+    },
+    {
+      "name": "resources/list",
+      "summary": "List available resources from the server",
+      "description": "Sent from the client to request a list of resources the server has.",
+      "params": [
+        {
+          "name": "cursor",
+          "required": false,
+          "description": "An opaque token representing the current pagination position. If provided, the server should return results starting after this cursor.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "listResourcesResult",
+        "schema": {
+          "$ref": "#/components/schemas/ListResourcesResult"
+        }
+      }
+    },
+    {
+      "name": "resources/read",
+      "summary": "Read a specific resource",
+      "description": "Sent from the client to the server, to read a specific resource URI.",
+      "params": [
+        {
+          "name": "uri",
+          "required": true,
+          "description": "The URI of the resource to read. The URI can use any protocol; it is up to the server how to interpret it.",
+          "schema": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      ],
+      "result": {
+        "name": "readResourceResult",
+        "schema": {
+          "$ref": "#/components/schemas/ReadResourceResult"
+        }
+      }
+    },
+    {
+      "name": "resources/subscribe",
+      "summary": "Subscribe to resource updates",
+      "description": "Sent from the client to request resources/updated notifications from the server whenever a particular resource changes.",
+      "params": [
+        {
+          "name": "uri",
+          "required": true,
+          "description": "The URI of the resource to subscribe to. The URI can use any protocol; it is up to the server how to interpret it.",
+          "schema": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      ],
+      "result": {
+        "name": "subscribeResult",
+        "schema": {
+          "$ref": "#/components/schemas/Result"
+        }
+      }
+    },
+    {
+      "name": "resources/unsubscribe",
+      "summary": "Unsubscribe from resource updates",
+      "description": "Sent from the client to request cancellation of resources/updated notifications from the server. This should follow a previous resources/subscribe request.",
+      "params": [
+        {
+          "name": "uri",
+          "required": true,
+          "description": "The URI of the resource to unsubscribe from.",
+          "schema": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      ],
+      "result": {
+        "name": "unsubscribeResult",
+        "schema": {
+          "$ref": "#/components/schemas/Result"
+        }
+      }
+    },
+    {
+      "name": "prompts/list",
+      "summary": "List available prompts",
+      "description": "Sent from the client to request a list of prompts and prompt templates the server has.",
+      "params": [
+        {
+          "name": "cursor",
+          "required": false,
+          "description": "An opaque token representing the current pagination position. If provided, the server should return results starting after this cursor.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "listPromptsResult",
+        "schema": {
+          "$ref": "#/components/schemas/ListPromptsResult"
+        }
+      }
+    },
+    {
+      "name": "prompts/get",
+      "summary": "Get a specific prompt",
+      "description": "Used by the client to get a prompt provided by the server.",
+      "params": [
+        {
+          "name": "name",
+          "required": true,
+          "description": "The name of the prompt or prompt template.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "arguments",
+          "required": false,
+          "description": "Arguments to use for templating the prompt.",
+          "schema": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      ],
+      "result": {
+        "name": "getPromptResult",
+        "schema": {
+          "$ref": "#/components/schemas/GetPromptResult"
+        }
+      }
+    },
+    {
+      "name": "tools/list",
+      "summary": "List available tools",
+      "description": "Sent from the client to request a list of tools the server has.",
+      "params": [
+        {
+          "name": "cursor",
+          "required": false,
+          "description": "An opaque token representing the current pagination position. If provided, the server should return results starting after this cursor.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "listToolsResult",
+        "schema": {
+          "$ref": "#/components/schemas/ListToolsResult"
+        }
+      }
+    },
+    {
+      "name": "tools/call",
+      "summary": "Call a tool",
+      "description": "Used by the client to invoke a tool provided by the server.",
+      "params": [
+        {
+          "name": "name",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "arguments",
+          "required": false,
+          "schema": {
+            "type": "object",
+            "additionalProperties": {}
+          }
+        }
+      ],
+      "result": {
+        "name": "callToolResult",
+        "schema": {
+          "$ref": "#/components/schemas/CallToolResult"
+        }
+      }
+    },
+    {
+      "name": "logging/setLevel",
+      "summary": "Set the logging level",
+      "description": "A request from the client to the server, to enable or adjust logging.",
+      "params": [
+        {
+          "name": "level",
+          "required": true,
+          "description": "The level of logging that the client wants to receive from the server. The server should send all logs at this level and higher (i.e., more severe) to the client as notifications/message.",
+          "schema": {
+            "$ref": "#/components/schemas/LoggingLevel"
+          }
+        }
+      ],
+      "result": {
+        "name": "setLevelResult",
+        "schema": {
+          "$ref": "#/components/schemas/Result"
+        }
+      }
+    },
+    {
+      "name": "completion/complete",
+      "summary": "Get completion suggestions",
+      "description": "A request from the client to the server, to ask for completion options.",
+      "params": [
+        {
+          "name": "ref",
+          "required": true,
+          "schema": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PromptReference"
+              },
+              {
+                "$ref": "#/components/schemas/ResourceReference"
+              }
+            ]
+          }
+        },
+        {
+          "name": "argument",
+          "required": true,
+          "description": "The argument's information",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "The name of the argument"
+              },
+              "value": {
+                "type": "string",
+                "description": "The value of the argument to use for completion matching."
+              }
+            },
+            "required": [
+              "name",
+              "value"
+            ]
+          }
+        }
+      ],
+      "result": {
+        "name": "completeResult",
+        "schema": {
+          "$ref": "#/components/schemas/CompleteResult"
+        }
+      }
+    },
+    {
+      "name": "sampling/createMessage",
+      "summary": "Request LLM sampling from the client",
+      "description": "A request from the server to sample an LLM via the client. The client has full discretion over which model to select.",
+      "params": [
+        {
+          "name": "messages",
+          "required": true,
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SamplingMessage"
+            }
+          }
+        },
+        {
+          "name": "maxTokens",
+          "required": true,
+          "description": "The maximum number of tokens to sample, as requested by the server. The client MAY choose to sample fewer tokens than requested.",
+          "schema": {
+            "type": "integer"
+          }
+        },
+        {
+          "name": "stopSequences",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "name": "temperature",
+          "required": false,
+          "schema": {
+            "type": "number"
+          }
+        },
+        {
+          "name": "systemPrompt",
+          "required": false,
+          "description": "An optional system prompt the server wants to use for sampling. The client MAY modify or omit this prompt.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "modelPreferences",
+          "required": false,
+          "description": "The server's preferences for which model to select. The client MAY ignore these preferences.",
+          "schema": {
+            "$ref": "#/components/schemas/ModelPreferences"
+          }
+        },
+        {
+          "name": "includeContext",
+          "required": false,
+          "description": "A request to include context from one or more MCP servers (including the caller), to be attached to the prompt. The client MAY ignore this request.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "allServers",
+              "none",
+              "thisServer"
+            ]
+          }
+        },
+        {
+          "name": "metadata",
+          "required": false,
+          "description": "Optional metadata to pass through to the LLM provider. The format of this metadata is provider-specific.",
+          "schema": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      ],
+      "result": {
+        "name": "createMessageResult",
+        "schema": {
+          "$ref": "#/components/schemas/CreateMessageResult"
+        }
+      }
+    },
+    {
+      "name": "roots/list",
+      "summary": "List available roots",
+      "description": "Sent from the server to request a list of root URIs from the client.",
+      "params": [],
+      "result": {
+        "name": "listRootsResult",
+        "schema": {
+          "$ref": "#/components/schemas/ListRootsResult"
+        }
+      }
+    }
+  ],
+  "components": {
+    "schemas": {
+      "Result": {
+        "type": "object",
+        "properties": {
+          "_meta": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "This result property is reserved by the protocol to allow clients and servers to attach additional metadata to their responses."
+          }
+        },
+        "additionalProperties": {}
+      },
+      "InitializeResult": {
+        "type": "object",
+        "properties": {
+          "_meta": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "This result property is reserved by the protocol to allow clients and servers to attach additional metadata to their responses."
+          },
+          "protocolVersion": {
+            "type": "string",
+            "description": "The version of the Model Context Protocol that the server wants to use. This may not match the version that the client requested. If the client cannot support this version, it MUST disconnect."
+          },
+          "serverInfo": {
+            "$ref": "#/components/schemas/Implementation"
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/ServerCapabilities"
+          },
+          "instructions": {
+            "type": "string",
+            "description": "Instructions describing how to use the server and its features."
+          }
+        },
+        "required": [
+          "protocolVersion",
+          "serverInfo",
+          "capabilities"
+        ],
+        "description": "After receiving an initialize request from the client, the server sends this response."
+      },
+      "Implementation": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "version"
+        ],
+        "description": "Describes the name and version of an MCP implementation."
+      },
+      "ClientCapabilities": {
+        "type": "object",
+        "properties": {
+          "experimental": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "description": "Experimental, non-standard capabilities that the client supports."
+          },
+          "sampling": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Present if the client supports sampling from an LLM."
+          },
+          "roots": {
+            "type": "object",
+            "properties": {
+              "listChanged": {
+                "type": "boolean",
+                "description": "Whether the client supports notifications for changes to the roots list."
+              }
+            },
+            "description": "Present if the client supports listing roots."
+          }
+        },
+        "description": "Capabilities a client may support."
+      },
+      "ServerCapabilities": {
+        "type": "object",
+        "properties": {
+          "experimental": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "description": "Experimental, non-standard capabilities that the server supports."
+          },
+          "logging": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Present if the server supports sending log messages to the client."
+          },
+          "prompts": {
+            "type": "object",
+            "properties": {
+              "listChanged": {
+                "type": "boolean",
+                "description": "Whether this server supports notifications for changes to the prompt list."
+              }
+            },
+            "description": "Present if the server offers any prompt templates."
+          },
+          "resources": {
+            "type": "object",
+            "properties": {
+              "listChanged": {
+                "type": "boolean",
+                "description": "Whether this server supports notifications for changes to the resource list."
+              },
+              "subscribe": {
+                "type": "boolean",
+                "description": "Whether this server supports subscribing to resource updates."
+              }
+            },
+            "description": "Present if the server offers any resources to read."
+          },
+          "tools": {
+            "type": "object",
+            "properties": {
+              "listChanged": {
+                "type": "boolean",
+                "description": "Whether this server supports notifications for changes to the tool list."
+              }
+            },
+            "description": "Present if the server offers any tools to call."
+          },
+          "completions": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Present if the server supports argument autocompletion suggestions."
+          }
+        },
+        "description": "Capabilities that a server may support."
+      },
+      "ListResourcesResult": {
+        "type": "object",
+        "properties": {
+          "_meta": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "This result property is reserved by the protocol to allow clients and servers to attach additional metadata to their responses."
+          },
+          "resources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Resource"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "description": "An opaque token representing the pagination position after the last returned result. If present, there may be more results available."
+          }
+        },
+        "required": [
+          "resources"
+        ],
+        "description": "The server's response to a resources/list request from the client."
+      },
+      "Resource": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "A human-readable name for this resource."
+          },
+          "uri": {
+            "type": "string",
+            "format": "uri",
+            "description": "The URI of this resource."
+          },
+          "description": {
+            "type": "string",
+            "description": "A description of what this resource represents."
+          },
+          "mimeType": {
+            "type": "string",
+            "description": "The MIME type of this resource, if known."
+          },
+          "annotations": {
+            "$ref": "#/components/schemas/Annotations",
+            "description": "Optional annotations for the client."
+          }
+        },
+        "required": [
+          "name",
+          "uri"
+        ],
+        "description": "A known resource that the server is capable of reading."
+      },
+      "ReadResourceResult": {
+        "type": "object",
+        "properties": {
+          "_meta": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "This result property is reserved by the protocol to allow clients and servers to attach additional metadata to their responses."
+          },
+          "contents": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/TextResourceContents"
+                },
+                {
+                  "$ref": "#/components/schemas/BlobResourceContents"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "contents"
+        ],
+        "description": "The server's response to a resources/read request from the client."
+      },
+      "TextResourceContents": {
+        "type": "object",
+        "properties": {
+          "uri": {
+            "type": "string",
+            "format": "uri",
+            "description": "The URI of this resource."
+          },
+          "text": {
+            "type": "string",
+            "description": "The text of the item. This must only be set if the item can actually be represented as text (not binary data)."
+          },
+          "mimeType": {
+            "type": "string",
+            "description": "The MIME type of this resource, if known."
+          }
+        },
+        "required": [
+          "uri",
+          "text"
+        ]
+      },
+      "BlobResourceContents": {
+        "type": "object",
+        "properties": {
+          "uri": {
+            "type": "string",
+            "format": "uri",
+            "description": "The URI of this resource."
+          },
+          "blob": {
+            "type": "string",
+            "format": "byte",
+            "description": "A base64-encoded string representing the binary data of the item."
+          },
+          "mimeType": {
+            "type": "string",
+            "description": "The MIME type of this resource, if known."
+          }
+        },
+        "required": [
+          "uri",
+          "blob"
+        ]
+      },
+      "ListPromptsResult": {
+        "type": "object",
+        "properties": {
+          "_meta": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "This result property is reserved by the protocol to allow clients and servers to attach additional metadata to their responses."
+          },
+          "prompts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Prompt"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "description": "An opaque token representing the pagination position after the last returned result. If present, there may be more results available."
+          }
+        },
+        "required": [
+          "prompts"
+        ],
+        "description": "The server's response to a prompts/list request from the client."
+      },
+      "Prompt": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the prompt or prompt template."
+          },
+          "description": {
+            "type": "string",
+            "description": "An optional description of what this prompt provides"
+          },
+          "arguments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PromptArgument"
+            },
+            "description": "A list of arguments to use for templating the prompt."
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "description": "A prompt or prompt template that the server offers."
+      },
+      "PromptArgument": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the argument."
+          },
+          "description": {
+            "type": "string",
+            "description": "A human-readable description of the argument."
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Whether this argument must be provided."
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "description": "Describes an argument that a prompt can accept."
+      },
+      "GetPromptResult": {
+        "type": "object",
+        "properties": {
+          "_meta": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "This result property is reserved by the protocol to allow clients and servers to attach additional metadata to their responses."
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PromptMessage"
+            }
+          },
+          "description": {
+            "type": "string",
+            "description": "An optional description for the prompt."
+          }
+        },
+        "required": [
+          "messages"
+        ],
+        "description": "The server's response to a prompts/get request from the client."
+      },
+      "PromptMessage": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TextContent"
+              },
+              {
+                "$ref": "#/components/schemas/ImageContent"
+              },
+              {
+                "$ref": "#/components/schemas/AudioContent"
+              },
+              {
+                "$ref": "#/components/schemas/EmbeddedResource"
+              }
+            ]
+          }
+        },
+        "required": [
+          "role",
+          "content"
+        ],
+        "description": "Describes a message returned as part of a prompt."
+      },
+      "Role": {
+        "type": "string",
+        "enum": [
+          "user",
+          "assistant"
+        ],
+        "description": "The sender or recipient of messages and data in a conversation."
+      },
+      "TextContent": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "text"
+          },
+          "text": {
+            "type": "string",
+            "description": "The text content of the message."
+          },
+          "annotations": {
+            "$ref": "#/components/schemas/Annotations",
+            "description": "Optional annotations for the client."
+          }
+        },
+        "required": [
+          "type",
+          "text"
+        ],
+        "description": "Text provided to or from an LLM."
+      },
+      "ImageContent": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "image"
+          },
+          "data": {
+            "type": "string",
+            "format": "byte",
+            "description": "The base64-encoded image data."
+          },
+          "mimeType": {
+            "type": "string",
+            "description": "The MIME type of the image. Different providers may support different image types."
+          },
+          "annotations": {
+            "$ref": "#/components/schemas/Annotations",
+            "description": "Optional annotations for the client."
+          }
+        },
+        "required": [
+          "type",
+          "data",
+          "mimeType"
+        ],
+        "description": "An image provided to or from an LLM."
+      },
+      "AudioContent": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "audio"
+          },
+          "data": {
+            "type": "string",
+            "format": "byte",
+            "description": "The base64-encoded audio data."
+          },
+          "mimeType": {
+            "type": "string",
+            "description": "The MIME type of the audio. Different providers may support different audio types."
+          },
+          "annotations": {
+            "$ref": "#/components/schemas/Annotations",
+            "description": "Optional annotations for the client."
+          }
+        },
+        "required": [
+          "type",
+          "data",
+          "mimeType"
+        ],
+        "description": "Audio provided to or from an LLM."
+      },
+      "EmbeddedResource": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "resource"
+          },
+          "resource": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TextResourceContents"
+              },
+              {
+                "$ref": "#/components/schemas/BlobResourceContents"
+              }
+            ]
+          },
+          "annotations": {
+            "$ref": "#/components/schemas/Annotations",
+            "description": "Optional annotations for the client."
+          }
+        },
+        "required": [
+          "type",
+          "resource"
+        ],
+        "description": "The contents of a resource, embedded into a prompt or tool call result."
+      },
+      "ListToolsResult": {
+        "type": "object",
+        "properties": {
+          "_meta": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "This result property is reserved by the protocol to allow clients and servers to attach additional metadata to their responses."
+          },
+          "tools": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tool"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "description": "An opaque token representing the pagination position after the last returned result. If present, there may be more results available."
+          }
+        },
+        "required": [
+          "tools"
+        ],
+        "description": "The server's response to a tools/list request from the client."
+      },
+      "Tool": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the tool."
+          },
+          "description": {
+            "type": "string",
+            "description": "A human-readable description of the tool."
+          },
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "object"
+              },
+              "properties": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "properties": {}
+                }
+              },
+              "required": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "description": "A JSON Schema object defining the expected parameters for the tool."
+          },
+          "annotations": {
+            "$ref": "#/components/schemas/ToolAnnotations",
+            "description": "Optional additional tool information."
+          }
+        },
+        "required": [
+          "name",
+          "inputSchema"
+        ],
+        "description": "Definition for a tool the client can call."
+      },
+      "ToolAnnotations": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "A human-readable title for the tool."
+          },
+          "readOnlyHint": {
+            "type": "boolean",
+            "description": "If true, the tool does not modify its environment. Default: false"
+          },
+          "destructiveHint": {
+            "type": "boolean",
+            "description": "If true, the tool may perform destructive updates to its environment. If false, the tool performs only additive updates. Default: true"
+          },
+          "idempotentHint": {
+            "type": "boolean",
+            "description": "If true, calling the tool repeatedly with the same arguments will have no additional effect on the its environment. Default: false"
+          },
+          "openWorldHint": {
+            "type": "boolean",
+            "description": "If true, this tool may interact with an \"open world\" of external entities. If false, the tool's domain of interaction is closed. Default: true"
+          }
+        },
+        "description": "Additional properties describing a Tool to clients."
+      },
+      "CallToolResult": {
+        "type": "object",
+        "properties": {
+          "_meta": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "This result property is reserved by the protocol to allow clients and servers to attach additional metadata to their responses."
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/TextContent"
+                },
+                {
+                  "$ref": "#/components/schemas/ImageContent"
+                },
+                {
+                  "$ref": "#/components/schemas/AudioContent"
+                },
+                {
+                  "$ref": "#/components/schemas/EmbeddedResource"
+                }
+              ]
+            }
+          },
+          "isError": {
+            "type": "boolean",
+            "description": "Whether the tool call ended in an error."
+          }
+        },
+        "required": [
+          "content"
+        ],
+        "description": "The server's response to a tool call."
+      },
+      "LoggingLevel": {
+        "type": "string",
+        "enum": [
+          "emergency",
+          "alert",
+          "critical",
+          "error",
+          "warning",
+          "notice",
+          "info",
+          "debug"
+        ],
+        "description": "The severity of a log message."
+      },
+      "CompleteResult": {
+        "type": "object",
+        "properties": {
+          "_meta": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "This result property is reserved by the protocol to allow clients and servers to attach additional metadata to their responses."
+          },
+          "completion": {
+            "type": "object",
+            "properties": {
+              "values": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "An array of completion values. Must not exceed 100 items."
+              },
+              "total": {
+                "type": "integer",
+                "description": "The total number of completion options available. This can exceed the number of values actually sent in the response."
+              },
+              "hasMore": {
+                "type": "boolean",
+                "description": "Indicates whether there are additional completion options beyond those provided in the current response, even if the exact total is unknown."
+              }
+            },
+            "required": [
+              "values"
+            ]
+          }
+        },
+        "required": [
+          "completion"
+        ],
+        "description": "The server's response to a completion/complete request"
+      },
+      "PromptReference": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "ref/prompt"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the prompt or prompt template"
+          }
+        },
+        "required": [
+          "type",
+          "name"
+        ],
+        "description": "Identifies a prompt."
+      },
+      "ResourceReference": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "ref/resource"
+          },
+          "uri": {
+            "type": "string",
+            "format": "uri-template",
+            "description": "The URI or URI template of the resource."
+          }
+        },
+        "required": [
+          "type",
+          "uri"
+        ],
+        "description": "A reference to a resource or resource template definition."
+      },
+      "SamplingMessage": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TextContent"
+              },
+              {
+                "$ref": "#/components/schemas/ImageContent"
+              },
+              {
+                "$ref": "#/components/schemas/AudioContent"
+              }
+            ]
+          }
+        },
+        "required": [
+          "role",
+          "content"
+        ],
+        "description": "Describes a message issued to or received from an LLM API."
+      },
+      "CreateMessageResult": {
+        "type": "object",
+        "properties": {
+          "_meta": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "This result property is reserved by the protocol to allow clients and servers to attach additional metadata to their responses."
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TextContent"
+              },
+              {
+                "$ref": "#/components/schemas/ImageContent"
+              },
+              {
+                "$ref": "#/components/schemas/AudioContent"
+              }
+            ]
+          },
+          "model": {
+            "type": "string",
+            "description": "The name of the model that generated the message."
+          },
+          "stopReason": {
+            "type": "string",
+            "description": "The reason why sampling stopped, if known."
+          }
+        },
+        "required": [
+          "role",
+          "content",
+          "model"
+        ],
+        "description": "The client's response to a sampling/create_message request from the server."
+      },
+      "ModelPreferences": {
+        "type": "object",
+        "properties": {
+          "speedPriority": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "How much to prioritize sampling speed (latency) when selecting a model."
+          },
+          "costPriority": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "How much to prioritize cost when selecting a model."
+          },
+          "intelligencePriority": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "How much to prioritize intelligence and capabilities when selecting a model."
+          },
+          "hints": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModelHint"
+            },
+            "description": "Optional hints to use for model selection."
+          }
+        },
+        "description": "The server's preferences for model selection, requested of the client during sampling."
+      },
+      "ModelHint": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "A hint for a model name."
+          }
+        },
+        "description": "Hints to use for model selection."
+      },
+      "ListRootsResult": {
+        "type": "object",
+        "properties": {
+          "_meta": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "This result property is reserved by the protocol to allow clients and servers to attach additional metadata to their responses."
+          },
+          "roots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Root"
+            }
+          }
+        },
+        "required": [
+          "roots"
+        ],
+        "description": "The client's response to a roots/list request from the server."
+      },
+      "Root": {
+        "type": "object",
+        "properties": {
+          "uri": {
+            "type": "string",
+            "format": "uri",
+            "description": "The URI identifying the root. This *must* start with file:// for now."
+          },
+          "name": {
+            "type": "string",
+            "description": "An optional name for the root."
+          }
+        },
+        "required": [
+          "uri"
+        ],
+        "description": "Represents a root directory or file that the server can operate on."
+      },
+      "Annotations": {
+        "type": "object",
+        "properties": {
+          "priority": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Describes how important this data is for operating the server."
+          },
+          "audience": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Role"
+            },
+            "description": "Describes who the intended customer of this object or data is."
+          }
+        },
+        "description": "Optional annotations for the client."
+      }
+    }
+  }
+}
